@@ -6,7 +6,8 @@ The otherapp payload which is produced by this repo can be used on all regions a
 
 ## Usage
 
-The otherapp can be used with soundhax to launch an arm9 payload such as safeb9sinstaller
+The otherapp can be used with soundhax to launch an arm9 payload such as safeb9sinstaller.
+*The otherapp looks for a arm9.bin on the root of your sd card.*
 
 ### Steps
 
