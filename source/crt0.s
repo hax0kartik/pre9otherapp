@@ -27,9 +27,3 @@ _start:
 
 _init:
 	bx lr
-
-.global svcMiniBackdoor
-.type svcMiniBackdoor, %function
-svcMiniBackdoor:
-	svc 0x30
-	bx lr	

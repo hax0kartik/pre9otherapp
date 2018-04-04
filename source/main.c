@@ -9,7 +9,49 @@
 #include "libctru/svc.h"
 #include "libctru/srv.h"
 
+const char* const aptServiceNames[] = {"APT:U", "APT:A", "APT:S"};
+
+#define aptSessionInit() \
+	int aptIndex; \
+	for(aptIndex = 0; aptIndex < 3; aptIndex++)	if(!srvGetServiceHandle(&aptuHandle, (char*)aptServiceNames[aptIndex]))break;\
+	svcCloseHandle(aptuHandle);\
+
+#define aptOpenSession() \
+	svcWaitSynchronization(aptLockHandle, U64_MAX);\
+	srvGetServiceHandle(&aptuHandle, (char*)aptServiceNames[aptIndex]);\
+
+#define aptCloseSession()\
+	svcCloseHandle(aptuHandle);\
+	svcReleaseMutex(aptLockHandle);\
+	
 #define HID_PAD (*(vu32*)0x1000001C)
+
+
+Result APT_GetLockHandle(Handle* handle, u16 flags, Handle* lockHandle)
+{
+	u32* cmdbuf = getThreadCommandBuffer();
+	cmdbuf[0] = 0x10040; //request header code
+	cmdbuf[1] = flags;
+	
+	Result ret=0;
+	if((ret=svcSendSyncRequest(*handle)))return ret;
+	
+	if(lockHandle)*lockHandle=cmdbuf[5];
+	
+	return cmdbuf[1];
+}
+
+Result APT_CheckNew3ds(Handle *handle, bool *out)
+{
+	u32 *cmdbuf = getThreadCommandBuffer(); 
+	cmdbuf[0]=0x1020000;
+
+	Result ret = svcSendSyncRequest(*handle);
+	if (ret == 0)
+		*out = cmdbuf[2] & 0xFF;
+
+	return ret;
+}
 
 const u8 hexTable[]=
 {
@@ -97,7 +139,6 @@ extern u64 g_ext_arm9_size;
 
 int main(u32 loaderparam, char** argv)
 {
-	srvInit();
 	u32 *paramblk = (u32*)loaderparam;
 	Handle* gspHandle=(Handle*)paramblk[0x58>>2];
 	u32* linear_buffer = (u32*)((((u32)paramblk) + 0x1000) & ~0xfff);
@@ -105,15 +146,30 @@ int main(u32 loaderparam, char** argv)
 	// put framebuffers in linear mem so they're writable
 	u8* top_framebuffer = &linear_buffer[0x00100000/4];
 	u8* low_framebuffer = &top_framebuffer[0x00046500];
+
+	srvInit();
 	
 	GSP_SetBufferSwap(*gspHandle, 0, (GSPGPU_FramebufferInfo){0, (u32*)top_framebuffer, (u32*)top_framebuffer, 240 * 3, (1<<8)|(1<<6)|1, 0, 0});
 	GSP_SetBufferSwap(*gspHandle, 1, (GSPGPU_FramebufferInfo){0, (u32*)low_framebuffer, (u32*)low_framebuffer, 240 * 3, 1, 0, 0});
-
-	int line=10;
-	drawTitleScreen("");
 	
-	svcSleepThread(1e+9);
-	svcSleepThread(1e+9);
+	Handle aptuHandle;
+	Handle aptLockHandle;
+	bool isN3ds;
+	aptSessionInit();
+	
+	aptOpenSession();
+	APT_GetLockHandle(&aptuHandle, 0x0, &aptLockHandle);
+	aptCloseSession();
+	
+	aptOpenSession();
+	APT_CheckNew3ds(&aptuHandle, &isN3ds);
+	aptCloseSession();
+	
+	svcCloseHandle(aptLockHandle);
+	
+	drawTitleScreen("");
+	drawHex(isN3ds, 8, 120);
+	
 	renderString("Trying memchunkhax", 8, 50);
 	do_memchunkhax1();
 	
@@ -135,14 +191,12 @@ int main(u32 loaderparam, char** argv)
 	ret = load_arm9_payload_offset ("/arm9.bin", 0, 0);
 	drawHex(ret, 8, 100);
 
-	ret = firm_reboot(1);
+	ret = firm_reboot(isN3ds);
 	drawHex((u32)ret, 8, 110);
 	svcSleepThread(100000000); //sleep long enough for memory to be written
 	//drawTitleScreen("\n   The homemenu ropbin is ready.");
 	
 	while(1);
-	//disable GSP module access
-	GSP_ReleaseRight(*gspHandle);
 	svcCloseHandle(*gspHandle);
 
 
