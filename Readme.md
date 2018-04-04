@@ -13,7 +13,7 @@ The otherapp can be used with soundhax to launch an arm9 payload such as safeb9s
  1. Get the soundhax file for your console and region
  2. Get the arm9 payload, safeb9sinstaller in this case
  3. Download the otherapp.bin from the releases page
- 4. Put all the files on the root of your sd
+ 4. Put all the files on the root of your sd(for safeb9sinstaller, just copy the arm9.bin from the zip)
  5. Launch soundhax
 
 If everything goes correctly you will be in safeb9sinstaller, this might/might not work on the first try.
