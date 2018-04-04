@@ -14,7 +14,7 @@ CC = arm-none-eabi-gcc
 LINK = arm-none-eabi-ld
 AS = arm-none-eabi-as
 OBJCOPY = arm-none-eabi-objcopy
-CFLAGS += -Wall -std=c99 -march=armv6 -Os -fno-exceptions $(DEFINES) -Isource/libctru -Isource
+CFLAGS = -Wall -std=c99 -march=armv6 -Os -fno-exceptions $(DEFINES) -Isource/libctru -Isource
 LDFLAGS += --script=$(LDPATH) -L"$(DEVKITARM)/arm-none-eabi/lib" -Map=output.map
 
 CFILES = $(wildcard source/libctru/*.c source/*.c)

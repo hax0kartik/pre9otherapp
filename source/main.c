@@ -4,10 +4,10 @@
 #include "gspgpu.h"
 #include "text.h"
 #include "memchunkhax.h"
+#include "brahma.h"
 #include "libctru/types.h"
 #include "libctru/svc.h"
 #include "libctru/srv.h"
-#include "libctru/pm.h"
 
 #define HID_PAD (*(vu32*)0x1000001C)
 
@@ -92,7 +92,9 @@ s32 set_test_result(void)
    return 0;
 }
 
-Result safehax();
+extern u8 *g_ext_arm9_buf;
+extern u64 g_ext_arm9_size;
+
 int main(u32 loaderparam, char** argv)
 {
 	srvInit();
@@ -126,10 +128,15 @@ int main(u32 loaderparam, char** argv)
 	renderString("Unblocking access to all services", 8, 70);
 	unlock_services(1);
 	
-	renderString("Trying safehax", 8, 80);
-	Result ret = safehax();
-	drawHex(ret, 8, 130);
+	renderString("Initing brahma", 8, 80);
+	Result ret = brahma_init();
+	drawHex(ret, 8, 90);
 	
+	ret = load_arm9_payload_offset ("/arm9.bin", 0, 0);
+	drawHex(ret, 8, 100);
+
+	ret = firm_reboot(1);
+	drawHex((u32)ret, 8, 110);
 	svcSleepThread(100000000); //sleep long enough for memory to be written
 	//drawTitleScreen("\n   The homemenu ropbin is ready.");
 	
