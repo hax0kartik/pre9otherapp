@@ -152,6 +152,8 @@ int main(u32 loaderparam, char** argv)
 	GSP_SetBufferSwap(*gspHandle, 0, (GSPGPU_FramebufferInfo){0, (u32*)top_framebuffer, (u32*)top_framebuffer, 240 * 3, (1<<8)|(1<<6)|1, 0, 0});
 	GSP_SetBufferSwap(*gspHandle, 1, (GSPGPU_FramebufferInfo){0, (u32*)low_framebuffer, (u32*)low_framebuffer, 240 * 3, 1, 0, 0});
 	
+	drawTitleScreen("");
+	
 	Handle aptuHandle;
 	Handle aptLockHandle;
 	bool isN3ds;
@@ -193,6 +195,7 @@ int main(u32 loaderparam, char** argv)
 
 	ret = firm_reboot(isN3ds);
 	drawHex((u32)ret, 8, 110);
+	
 	svcSleepThread(100000000); //sleep long enough for memory to be written
 	//drawTitleScreen("\n   The homemenu ropbin is ready.");
 	

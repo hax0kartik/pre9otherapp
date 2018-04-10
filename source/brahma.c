@@ -225,6 +225,23 @@ Result fill_firm_specific(bool isN3DS, u32 fversion, exploit_data *data)
 			break;
 		}
 		
+		case 0x022D0500:
+		{
+			data->firm_version = 0x022D0500;
+			data->sys_model = SYS_MODEL_NEW_3DS;
+			data->va_patch_hook1 = 0xDFFE6E74;
+			data->va_patch_hook2 = 0xDFFF4994;
+			data->va_hook1_ret   = 0xFFF27E7C;
+			data->va_fcram_base  = 0xE0000000;
+			data->va_exc_handler_base_W = 0xDFFF4000;
+			data->va_exc_handler_base_X = 0xFFFF0000;
+			data->va_kernelsetstate = 0xFFF15204;
+			data->va_pdn_regs = 0xFFFBE000;
+			data->va_pxi_regs = 0xFFFC0000;
+			
+			break;
+		}
+		
 		default:
 			res = 0;
 	}
