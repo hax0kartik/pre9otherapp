@@ -24,7 +24,7 @@ OFILES += $(CFILES:source/%.c=build/%.o)
 DFILES = $(CFILES:source/%.c=build/%.d)
 SFILES = $(wildcard source/libctru/*.s source/*.s)
 OFILES += $(SFILES:source/%.s=build/%.o)
-PROJECTNAME = ${shell basename "$(CURDIR)"}
+PROJECTNAME = otherapp
 CWD = "$(CURDIR)""
 
 #---------------------------------------------------------------------------------

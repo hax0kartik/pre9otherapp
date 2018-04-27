@@ -1,5 +1,3 @@
-#include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 #include "gspgpu.h"
 #include "text.h"
@@ -137,6 +135,46 @@ s32 set_test_result(void)
 extern u8 *g_ext_arm9_buf;
 extern u64 g_ext_arm9_size;
 
+u8 *startPos; 
+u32 size; 
+void *pattern; 
+u32 patternSize;
+
+u32 memsearch(void)
+{
+     u8 *patternc = (u8 *)pattern;
+    u32 table[256];
+
+    //Preprocessing
+    for(u32 i = 0; i < 256; i++)
+        table[i] = patternSize;
+    for(u32 i = 0; i < patternSize - 1; i++)
+        table[patternc[i]] = patternSize - i - 1;
+
+    //Searching
+    u32 j = 0;
+    while(j <= size - patternSize)
+    {
+        u8 c = startPos[j + patternSize - 1];
+        if(patternc[patternSize - 1] == c && memcmp(pattern, startPos + j, patternSize - 1) == 0)
+            return (u32)startPos + j;
+        j += table[c];
+    }
+
+    return 0;
+}
+
+u32 k_vaddr_search(u8 *_startpos, u32 _size, void *_pattern, u32 _pattern_size)
+{
+	startPos = _startpos;
+	size = _size;
+	pattern = _pattern;
+	patternSize = _pattern_size;
+	
+	u32 addr = svc_7b(memsearch);
+	return addr;
+}
+
 int main(u32 loaderparam, char** argv)
 {
 	u32 *paramblk = (u32*)loaderparam;
@@ -170,12 +208,12 @@ int main(u32 loaderparam, char** argv)
 	svcCloseHandle(aptLockHandle);
 	
 	drawTitleScreen("");
-	drawHex(isN3ds, 8, 120);
+	drawHex(0, 8, 120);
 	
 	renderString("Trying memchunkhax", 8, 50);
 	do_memchunkhax1();
 	
-	svc_7b((backdoor_fn)k_enable_all_svcs, 1);
+	svc_7b((backdoor_fn)k_enable_all_svcs, 0);
 	renderString("Unblocked svcs    ", 8, 50);
 	svcSleepThread(1e+9);
 	
@@ -184,7 +222,7 @@ int main(u32 loaderparam, char** argv)
 	renderString(test_result, 8, 60);
 	
 	renderString("Unblocking access to all services", 8, 70);
-	unlock_services(1);
+	unlock_services(isN3ds);
 	
 	renderString("Initing brahma", 8, 80);
 	Result ret = brahma_init();
@@ -198,7 +236,6 @@ int main(u32 loaderparam, char** argv)
 	
 	svcSleepThread(100000000); //sleep long enough for memory to be written
 	//drawTitleScreen("\n   The homemenu ropbin is ready.");
-	
 	while(1);
 	svcCloseHandle(*gspHandle);
 

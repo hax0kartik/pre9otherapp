@@ -7,6 +7,10 @@
 #include "libctru/fs.h"
 #include "libctru/svc.h"
 
+#define SYSTEM_VERSION(major, minor, revision) \
+	(((major)<<24)|((minor)<<16)|((revision)<<8))
+
+
 u32 *g_ext_arm9_buf;
 u64 g_ext_arm9_size;
 static bool g_ext_arm9_loaded;
@@ -238,6 +242,23 @@ Result fill_firm_specific(bool isN3DS, u32 fversion, exploit_data *data)
 			data->va_kernelsetstate = 0xFFF15204;
 			data->va_pdn_regs = 0xFFFBE000;
 			data->va_pxi_regs = 0xFFFC0000;
+			
+			break;
+		}
+		
+		case 0x2210400:
+		{
+			data->firm_version = 0x2210400;
+			data->sys_model = SYS_MODEL_OLD_3DS | SYS_MODEL_NEW_3DS;
+			data->va_patch_hook1 = 0xEFFE4DD8;
+			data->va_patch_hook2 = 0xEFFF497C;
+			data->va_hook1_ret = 0xFFF84DE0;
+			data->va_fcram_base = 0xF0000000;
+			data->va_exc_handler_base_W = 0xEFFF4000;
+			data->va_exc_handler_base_X = 0xFFFF0000;
+			data->va_kernelsetstate = 0xFFF748C8;
+			data->va_pdn_regs = 0xFFFD0000;
+			data->va_pxi_regs = 0xFFFD2000;
 			
 			break;
 		}
