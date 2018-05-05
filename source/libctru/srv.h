@@ -6,6 +6,7 @@
 
 #include "types.h"
 
+Handle g_srvHandle;
 /// Initializes the service API.
 Result srvInit(Handle* srvHandle, const Handle* srvPmHandle);
 
@@ -17,7 +18,7 @@ void srvExit(Handle* srvHandle);
  * @param out Pointer to write the handle to.
  * @param name Name of the service.
  */
-Result srvGetServiceHandle(const Handle* srvHandle, Handle* out, const char* name);
+Result srvGetServiceHandle(Handle* out, const char* name);
 
 /// Registers the current process as a client to the service API.
 Result srvRegisterClient(const Handle* srvHandle);

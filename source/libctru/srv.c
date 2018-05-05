@@ -2,6 +2,7 @@
   srv.c _ Service manager.
 */
 
+#include <string.h>
 #include "types.h"
 #include "result.h"
 #include "svc.h"
@@ -31,6 +32,7 @@ Result srvInit(Handle* srvHandle, const Handle* srvPmHandle)
     rc = srvRegisterClient(srvHandle);
 end:
     if (R_FAILED(rc)) srvExit(srvHandle);
+	g_srvHandle = *srvHandle;
     return rc;
 }
 
@@ -40,10 +42,10 @@ void srvExit(Handle* srvHandle)
     *srvHandle = 0;
 }
 
-Result srvGetServiceHandle(const Handle* srvHandle, Handle* out, const char* name)
+Result srvGetServiceHandle(Handle* out, const char* name)
 {
     /* Normal request to service manager. */
-    return srvGetServiceHandleDirect(srvHandle, out, name);
+    return srvGetServiceHandleDirect(&g_srvHandle, out, name);
 }
 
 Result srvRegisterClient(const Handle* srvHandle)

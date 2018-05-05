@@ -157,9 +157,10 @@ int main(u32 loaderparam, char** argv)
 	renderString("Escalating privileges", 8, 50);
 	Result ret = escalateServicePrivileges(&psHandle, "ps:ps");
 	drawHex(ret, 8, 60);
+	drawHex(psHandle, 8, 90);
 	
 	renderString("Triggering PS_VerifyRsaSha256_Exploit", 8, 70);
-	ret = PS_VerifyRsaSha256_Exploit(&psHandle);
+	ret = PS_VerifyRsaSha256_Exploit(&psHandle, linear_buffer);
 	drawHex(ret, 8, 80);
 	
 	svcSleepThread(100000000); //sleep long enough for memory to be written
