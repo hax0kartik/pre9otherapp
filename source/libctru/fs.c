@@ -15,7 +15,7 @@ Result fsInit(Handle *fsHandle)
 	if (R_SUCCEEDED(ret))
 	{
 		ret = FSUSER_Initialize(*fsHandle);
-		if (R_FAILED(ret)) svcCloseHandle(fsHandle);
+		if (R_FAILED(ret)) svcCloseHandle(*fsHandle);
 	}
 	return ret;
 }

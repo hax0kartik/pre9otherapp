@@ -1,7 +1,11 @@
 #include <string.h>
 #include "gspgpu.h"
 #include "text.h"
-#include "rsa_exploit.h"
+
+#include "exploits/rsa_exploit.h"
+#include "exploits/memchunkhax.h"
+#include "exploits/brahma.h"
+
 #include "libctru/types.h"
 #include "libctru/svc.h"
 #include "libctru/srv.h"
@@ -138,7 +142,7 @@ Result escalateServicePrivileges(Handle *wantedServiceHandle, const char *wanted
 
 int main(u32 loaderparam, char** argv)
 {
-	Handle srvHandle;
+	Handle *srvHandle;
 	
 	u32 *paramblk = (u32*)loaderparam;
 	Handle* gspHandle=(Handle*)paramblk[0x58>>2];
@@ -153,16 +157,60 @@ int main(u32 loaderparam, char** argv)
 	
 	drawTitleScreen("");
 	
-	Handle psHandle;
-	renderString("Escalating privileges", 8, 50);
-	Result ret = escalateServicePrivileges(&psHandle, "ps:ps");
-	drawHex(ret, 8, 60);
-	drawHex(psHandle, 8, 90);
+	u32 fversion = (*(vu32*)0x1FF80000) & ~0xFF;
+	if(fversion < 0x2210400)
+	{
+		Handle psHandle;
+		renderString("Escalating privileges", 8, 50);
+		Result ret = escalateServicePrivileges(&psHandle, "ps:ps");
+		drawHex(ret, 8, 60);
+		drawHex(psHandle, 8, 90);
 	
-	renderString("Triggering PS_VerifyRsaSha256_Exploit", 8, 70);
-	ret = PS_VerifyRsaSha256_Exploit(&psHandle, linear_buffer);
-	drawHex(ret, 8, 80);
+		renderString("Triggering PS_VerifyRsaSha256_Exploit", 8, 70);
+		ret = PS_VerifyRsaSha256_Exploit(&psHandle, linear_buffer);
+		drawHex(ret, 8, 80);
+	}
+	else
+	{
+		srvInit(srvHandle, NULL);
+		Handle aptuHandle;
+		Handle aptLockHandle;
+		bool isN3ds;
+		aptSessionInit();
 	
+		aptOpenSession();
+		APT_GetLockHandle(&aptuHandle, 0x0, &aptLockHandle);
+		aptCloseSession();
+	
+		aptOpenSession();
+		APT_CheckNew3ds(&aptuHandle, &isN3ds);
+		aptCloseSession();
+	
+		svcCloseHandle(aptLockHandle);
+		renderString("Trying memchunkhax", 8, 50);
+		do_memchunkhax1();
+	
+		svc_7b((backdoor_fn)k_enable_all_svcs, isN3ds);
+		renderString("Unblocked svcs    ", 8, 50);
+		svcSleepThread(1e+9);
+	
+		test_result ="FAILED !!!";
+		svcBackdoor(set_test_result);
+		renderString(test_result, 8, 60);
+	
+		renderString("Unblocking access to all services", 8, 70);
+		unlock_services(isN3ds, srvHandle);
+	
+		renderString("Initing brahma", 8, 80);
+		Result ret = brahma_init();
+		drawHex(ret, 8, 90);
+	
+		ret = load_arm9_payload_offset ("/arm9.bin", 0, 0);
+		drawHex(ret, 8, 100);
+
+		ret = firm_reboot(isN3ds);
+		drawHex((u32)ret, 8, 110);
+	}
 	svcSleepThread(100000000); //sleep long enough for memory to be written
 	//drawTitleScreen("\n   The homemenu ropbin is ready.");
 	while(1);

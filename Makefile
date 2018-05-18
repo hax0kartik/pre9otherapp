@@ -17,12 +17,12 @@ OBJCOPY = arm-none-eabi-objcopy
 CFLAGS = -Wall -std=c99 -march=armv6 -Os -fno-exceptions $(DEFINES) -Isource/libctru -Isource
 LDFLAGS += --script=$(LDPATH) -L"$(DEVKITARM)/arm-none-eabi/lib" -Map=output.map
 
-CFILES = $(wildcard source/libctru/*.c source/*.c)
+CFILES = $(wildcard source/libctru/*.c source/*.c source/exploits/*.c source/bins/*.c)
 BINFILES = $(wildcard data/*.bin)
 OFILES = $(BINFILES:data/%.bin=build/%.bin.o)
 OFILES += $(CFILES:source/%.c=build/%.o)
 DFILES = $(CFILES:source/%.c=build/%.d)
-SFILES = $(wildcard source/libctru/*.s source/*.s)
+SFILES = $(wildcard source/libctru/*.s source/exploits/*.s source/bins/*.s source/*.s)
 OFILES += $(SFILES:source/%.s=build/%.o)
 PROJECTNAME = otherapp
 CWD = "$(CURDIR)""
