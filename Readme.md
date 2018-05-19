@@ -1,8 +1,8 @@
 # pre9otherapp
-Otherapp payload which can be used on firmwares earlier than 4.0 to launch an arm9 payload from the sd card directly.
+Otherapp payload which can be used on firmwares earlier than 9.2 to launch an arm9 payload from the sd card directly.
 
 ### Note
-The otherapp payload which is produced by this repo can be used on all regions and 3ds consoles but work only between 1.X and 4.X
+The otherapp payload which is produced by this repo can be used on all regions and 3ds consoles but works on all between 1.X and 9.2
 
 ## Usage
 
@@ -21,7 +21,7 @@ If everything goes correctly you will be in safeb9sinstaller, this might/might n
 
 ## Technical details
 
-I have incorporated an edited version of usr2arm9ldr which launches the arm9 payload. [usr2arm9ldr](https://github.com/TuxSH/usr2arm9ldr) was written by TuxSH.
+I have incorporated an edited version of svchax(memchunkhax) and brahma(firmlaunchhax) to gain arm11 and arm9 execution. So we first use memchunkhax to gain arm11 execution, then we map the arm11 and arm9 payload and then perform a firmlaunch. On Pre 4.0 firms we use usr2arm9ldr to gain arm9 code execution
 
 ## Building
 
@@ -35,13 +35,14 @@ Simply open terminal and type
 
 ## Credits
 
-Huge parts of this project are parts of pre-existing projects. I would like to thank anyone who has aided in the development of [Usr2arm9ldr](https://github.com/TuxSH/usr2arm9ldr) and [ctrulib](https://github.com/smealum/ctrulib)
+Huge parts of this project are parts of pre-existing projects. I would like to thank anyone who has aided in the development of [BrahmaLoader](https://github.com/d0k3/BrahmaLoader), [svchax](https://github.com/aliaspider/svchax), [ctrulib](https://github.com/smealum/ctrulib), [usr2arm9ldr](https://github.com/tuxsh/usr2arm9ldr) and [ninjhax2.x](https://github.com/smealum/ninjhax2.x/tree/master/cn_secondary_payload)
 
-Massive thanks to my testers:- 
-
-[@jason0597](https://github.com/jason0597)
-[@ihaveamac](https://github.com/ihaveamac)
+I'll also like to thank my testers:- [@jason0597](https://github.com/jason0597), [@saibotu](https://github.com/saibotu), [@knight-ryu12](https://github.com/knight-ryu12), [@ihaveamac](https://github.com/ihaveamac) and [@frozenchen](https://github.com/frozenchen)
 
 Wouldn't have been able to do it without you guys!
 
 Also thanks to TuxSH for helping me out with various questions!
+
+## Help
+
+If you encounter any issue while using this, plz open an issue here:- https://github.com/Pirater12/pre9otherapp/issues
