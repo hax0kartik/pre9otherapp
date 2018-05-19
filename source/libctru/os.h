@@ -68,3 +68,72 @@ void* osConvertOldLINEARMemToNew(const void* vaddr);
  * This can be used to get some details about an error returned by a service call.
  */
 const char* osStrError(u32 error);
+
+/**
+ * @brief Gets the system's FIRM version.
+ * @return The system's FIRM version.
+ *
+ * This can be used to compare system versions easily with @ref SYSTEM_VERSION.
+ */
+static inline u32 osGetFirmVersion(void)
+{
+	return (*(vu32*)0x1FF80060) & ~0xFF;
+}
+
+/**
+ * @brief Gets the system's kernel version.
+ * @return The system's kernel version.
+ *
+ * This can be used to compare system versions easily with @ref SYSTEM_VERSION.
+ *
+ * @code
+ * if(osGetKernelVersion() > SYSTEM_VERSION(2,46,0)) printf("You are running 9.0 or higher\n");
+ * @endcode
+ */
+static inline u32 osGetKernelVersion(void)
+{
+	return (*(vu32*)0x1FF80000) & ~0xFF;
+}
+
+/**
+ * @brief Gets the size of the specified memory region.
+ * @param region Memory region to check.
+ * @return The size of the memory region, in bytes.
+ */
+static inline u32 osGetMemRegionSize(MemRegion region)
+{
+	if(region == MEMREGION_ALL) {
+		return osGetMemRegionSize(MEMREGION_APPLICATION) + osGetMemRegionSize(MEMREGION_SYSTEM) + osGetMemRegionSize(MEMREGION_BASE);
+	} else {
+		return *(vu32*) (0x1FF80040 + (region - 1) * 0x4);
+	}
+}
+
+/**
+ * @brief Gets the current Wifi signal strength.
+ * @return The current Wifi signal strength.
+ *
+ * Valid values are 0-3:
+ * - 0 means the singal strength is terrible or the 3DS is disconnected from
+ *   all networks.
+ * - 1 means the signal strength is bad.
+ * - 2 means the signal strength is decent.
+ * - 3 means the signal strength is good.
+ *
+ * Values outside the range of 0-3 should never be returned.
+ *
+ * These values correspond with the number of wifi bars displayed by Home Menu.
+ */
+static inline u8 osGetWifiStrength(void)
+{
+	return *(vu8*)0x1FF81066;
+}
+
+/**
+ * @brief Gets the state of the 3D slider.
+ * @return The state of the 3D slider (0.0~1.0)
+ */
+static inline float osGet3DSliderState(void)
+{
+	return *(volatile float*)0x1FF81080;
+}

