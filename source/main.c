@@ -142,7 +142,7 @@ Result escalateServicePrivileges(Handle *wantedServiceHandle, const char *wanted
 
 int main(u32 loaderparam, char** argv)
 {
-	Handle *srvHandle;
+	Handle srvHandle;
 	
 	u32 *paramblk = (u32*)loaderparam;
 	Handle* gspHandle=(Handle*)paramblk[0x58>>2];
@@ -172,7 +172,8 @@ int main(u32 loaderparam, char** argv)
 	}
 	else
 	{
-		srvInit(srvHandle, NULL);
+		renderString("SrvInit()", 8, 50);
+		srvInit(&srvHandle, NULL);
 		Handle aptuHandle;
 		Handle aptLockHandle;
 		bool isN3ds;
@@ -199,7 +200,7 @@ int main(u32 loaderparam, char** argv)
 		renderString(test_result, 8, 60);
 	
 		renderString("Unblocking access to all services", 8, 70);
-		unlock_services(isN3ds, srvHandle);
+		unlock_services(isN3ds, &srvHandle);
 	
 		renderString("Initing brahma", 8, 80);
 		Result ret = brahma_init();
