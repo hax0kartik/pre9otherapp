@@ -1,7 +1,9 @@
 # pre9otherapp
+
 Otherapp payload which can be used on firmwares earlier than 9.2 to launch an arm9 payload from the sd card directly.
 
 ### Note
+
 The otherapp payload which is produced by this repo can be used on all regions and 3ds consoles but works on all between 1.X and 9.2
 
 ## Usage
@@ -27,7 +29,7 @@ I have incorporated an edited version of svchax(memchunkhax) and brahma(firmlaun
 
 You need to have devkitpro installed to build this. CTRULIB isn't required.
 
-Simply open terminal and type 
+Simply open terminal and type
 
 > make
 
